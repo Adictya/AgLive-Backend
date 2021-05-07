@@ -5,6 +5,6 @@ INSERT INTO users (
 ) VALUES ($1,$2)
 RETURNING *;
 
--- name: GerUser :one
+-- name: GetUser :one
 SELECT * FROM users
 WHERE username=$1 LIMIT 1;

@@ -2,15 +2,13 @@
 
 package db
 
-import (
-	"database/sql"
-)
+import ()
 
 type Stream struct {
-	ID        int32          `json:"id"`
-	Channel   string         `json:"channel"`
-	Thumbnail string         `json:"thumbnail"`
-	Streamer  sql.NullString `json:"streamer"`
+	ID        int32  `json:"id"`
+	Channel   string `json:"channel"`
+	Thumbnail string `json:"thumbnail"`
+	Streamer  string `json:"streamer"`
 }
 
 type User struct {

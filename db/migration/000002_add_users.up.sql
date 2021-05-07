@@ -3,6 +3,6 @@ CREATE TABLE "users" (
   "hashed_password" varchar NOT NULL
 );
 
-ALTER TABLE "streams" ADD "streamer" varchar;
+ALTER TABLE "streams" ADD "streamer" varchar NOT NULL;
 
 ALTER TABLE "streams" ADD FOREIGN KEY ("streamer") REFERENCES "users" ("username");

@@ -27,13 +27,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
-const gerUser = `-- name: GerUser :one
+const getUser = `-- name: GetUser :one
 SELECT username, hashed_password FROM users
 WHERE username=$1 LIMIT 1
 `
 
-func (q *Queries) GerUser(ctx context.Context, username string) (User, error) {
-	row := q.db.QueryRowContext(ctx, gerUser, username)
+func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, username)
 	var i User
 	err := row.Scan(&i.Username, &i.HashedPassword)
 	return i, err

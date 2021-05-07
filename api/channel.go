@@ -6,11 +6,13 @@ import (
 
 	db "github.com/adictya/AgoraLive-backend/db/sqlc"
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 )
 
 type createStreamRequest struct {
 	Channel   string `json:"Channel" binding:"required"`
 	Thumbnail string `json:"Thumbnail" binding:"required"`
+	Streamer  string `json:"Streamer" binding:"required"`
 }
 
 func (server *Server) createStream(ctx *gin.Context) {
@@ -23,12 +25,20 @@ func (server *Server) createStream(ctx *gin.Context) {
 	arg := db.CreateStreamParams{
 		Channel:   req.Channel,
 		Thumbnail: req.Thumbnail,
+		Streamer:  req.Streamer,
 	}
 
 	stream, err := server.store.CreateStream(ctx, arg)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code.Name() {
+			case "foreign_key_violation", "unique_violation":
+				ctx.JSON(http.StatusForbidden, errorResponse(err))
+			}
+		} else {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		}
 		return
 	}
 

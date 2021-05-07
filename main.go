@@ -2,19 +2,15 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
 	"github.com/adictya/AgoraLive-backend/api"
 	db "github.com/adictya/AgoraLive-backend/db/sqlc"
+	"github.com/adictya/AgoraLive-backend/util"
 	_ "github.com/lib/pq"
 )
 
 const (
-	dbdriver = "postgres"
-	dbsource = "postgresql://root:secret@localhost:5432/root?sslmode=disable"
-	serverAddress = "0.0.0.0:8080"
-
 	host     = "localhost"
 	port     = 5432
 	user     = "root"
@@ -24,24 +20,21 @@ const (
 
 func main(){
 
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+	config, err := util.LoadConfig(".")
+	if err!= nil{
+		log.Fatal("cannot load config:", err)
+	}
 
-		log.Print(psqlInfo)
-
-	// conn, err := sql.Open("postgres", psqlInfo)
-
-	conn ,err := sql.Open(dbdriver,dbsource)
+	conn ,err := sql.Open(config.DBDriver,config.DBSource)
 
 	if err != nil {
-		log.Fatal("Cannot connect to db :", err)
+		log.Fatal("Cannot create server:", err)
 	}
 
 	store := db.NewStore(conn)
-	server := api.NewServer(store)
+	server,err := api.NewServer(config,store)
 
-	err = server.Start(serverAddress)
+	err = server.Start(config.ServerAddress)
 
 	if err != nil{
 		log.Fatal("Failed to start server : ",err)

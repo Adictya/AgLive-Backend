@@ -10,18 +10,20 @@ import (
 const createStream = `-- name: CreateStream :one
 INSERT INTO streams (
 	channel,
-	thumbnail
-) VALUES ($1,$2)
+	thumbnail,
+	streamer
+) VALUES ($1,$2,$3)
 RETURNING id, channel, thumbnail, streamer
 `
 
 type CreateStreamParams struct {
 	Channel   string `json:"channel"`
 	Thumbnail string `json:"thumbnail"`
+	Streamer  string `json:"streamer"`
 }
 
 func (q *Queries) CreateStream(ctx context.Context, arg CreateStreamParams) (Stream, error) {
-	row := q.db.QueryRowContext(ctx, createStream, arg.Channel, arg.Thumbnail)
+	row := q.db.QueryRowContext(ctx, createStream, arg.Channel, arg.Thumbnail, arg.Streamer)
 	var i Stream
 	err := row.Scan(
 		&i.ID,
@@ -53,7 +55,7 @@ func (q *Queries) GetThumbnail(ctx context.Context, id int32) (string, error) {
 }
 
 const listStreams = `-- name: ListStreams :many
-SELECT id,channel FROM streams
+SELECT id,channel,streamer FROM streams
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -65,8 +67,9 @@ type ListStreamsParams struct {
 }
 
 type ListStreamsRow struct {
-	ID      int32  `json:"id"`
-	Channel string `json:"channel"`
+	ID       int32  `json:"id"`
+	Channel  string `json:"channel"`
+	Streamer string `json:"streamer"`
 }
 
 func (q *Queries) ListStreams(ctx context.Context, arg ListStreamsParams) ([]ListStreamsRow, error) {
@@ -78,7 +81,7 @@ func (q *Queries) ListStreams(ctx context.Context, arg ListStreamsParams) ([]Lis
 	var items []ListStreamsRow
 	for rows.Next() {
 		var i ListStreamsRow
-		if err := rows.Scan(&i.ID, &i.Channel); err != nil {
+		if err := rows.Scan(&i.ID, &i.Channel, &i.Streamer); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
