@@ -35,11 +35,16 @@ func (q *Queries) CreateStream(ctx context.Context, arg CreateStreamParams) (Str
 }
 
 const deleteStream = `-- name: DeleteStream :exec
-DELETE FROM streams WHERE channel = $1
+DELETE FROM streams WHERE channel = $1 AND streamer = $2
 `
 
-func (q *Queries) DeleteStream(ctx context.Context, channel string) error {
-	_, err := q.db.ExecContext(ctx, deleteStream, channel)
+type DeleteStreamParams struct {
+	Channel  string `json:"channel"`
+	Streamer string `json:"streamer"`
+}
+
+func (q *Queries) DeleteStream(ctx context.Context, arg DeleteStreamParams) error {
+	_, err := q.db.ExecContext(ctx, deleteStream, arg.Channel, arg.Streamer)
 	return err
 }
 

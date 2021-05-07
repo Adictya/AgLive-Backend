@@ -16,4 +16,4 @@ OFFSET $2;
 SELECT thumbnail FROM streams WHERE id = $1;
 
 -- name: DeleteStream :exec
-DELETE FROM streams WHERE channel = $1;
+DELETE FROM streams WHERE channel = $1 AND streamer = $2;

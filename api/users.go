@@ -75,16 +75,14 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	HashedPassword, err := util.HashPassword(req.Password)
+	user, err := server.store.GetUser(ctx, req.Username)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	user, err := server.store.GetUser(ctx, req.Username)
-
-	if user.HashedPassword != HashedPassword {
-		ctx.JSON(http.StatusForbidden, "Invalid credentials")
+	if err := util.CheckPassword(req.Password, user.HashedPassword); err != nil {
+		ctx.JSON(http.StatusForbidden,"Invalid credentials")
 		return
 	}
 

@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	db "github.com/adictya/AgoraLive-backend/db/sqlc"
+	"github.com/adictya/AgoraLive-backend/token"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 )
@@ -12,7 +13,6 @@ import (
 type createStreamRequest struct {
 	Channel   string `json:"Channel" binding:"required"`
 	Thumbnail string `json:"Thumbnail" binding:"required"`
-	Streamer  string `json:"Streamer" binding:"required"`
 }
 
 func (server *Server) createStream(ctx *gin.Context) {
@@ -22,10 +22,12 @@ func (server *Server) createStream(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.CreateStreamParams{
 		Channel:   req.Channel,
 		Thumbnail: req.Thumbnail,
-		Streamer:  req.Streamer,
+		Streamer:  authPayload.Username,
 	}
 
 	stream, err := server.store.CreateStream(ctx, arg)
@@ -99,7 +101,14 @@ func (server *Server) deleteStream(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err)
 	}
 
-	err := server.store.DeleteStream(ctx, req.Channel)
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	arg := db.DeleteStreamParams{
+		Channel:  req.Channel,
+		Streamer: authPayload.Username,
+	}
+
+	err := server.store.DeleteStream(ctx, arg)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
