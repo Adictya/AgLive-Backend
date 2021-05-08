@@ -1,3 +1,6 @@
+postgres:
+	docker run --name postgres --network agoralive-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:12-alpine
+
 server:
 	gin --appPort 8080 --port 8000
 
